@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const name = document.getElementById("customerName").value.trim();
     const phone = document.getElementById("phoneNumber").value.trim();
     const email = document.getElementById("emailAddress").value.trim();
-    const service = document.getElementById("serviceselect").value;
+    const service = document.getElementById("serviceSelect").value;
     const quantity = document.getElementById("quantity").value.trim();
     const completionDate = document.getElementById("completionDate").value.trim();
 
