@@ -116,49 +116,64 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if (orderForm) {
-    orderForm.addEventListener("submit", (event) => {
-      event.preventDefault();
+  orderForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-      const name = document.getElementById("customerName").value.trim();
-      const phone = document.getElementById("phoneNumber").value.trim();
-      const email = document.getElementById("emailAddress").value.trim();
-      const service = document.getElementById("serviceSelect").value.trim();
-      const quantity = document.getElementById("quantity").value.trim();
-      const completionDate = document.getElementById("completionDate").value.trim();
-      const fileInput = document.getElementById("fileUpload");
-      const fileName = fileInput && fileInput.files && fileInput.files.length ? fileInput.files[0].name : "No file selected";
+    const name = document.getElementById("customerName").value.trim();
+    const phone = document.getElementById("phoneNumber").value.trim();
+    const email = document.getElementById("emailAddress").value.trim();
+    const service = document.getElementById("serviceselect").value;
+    const quantity = document.getElementById("quantity").value.trim();
+    const completionDate = document.getElementById("completionDate").value.trim();
 
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const phonePattern = /^[0-9+()\s-]{7,}$/;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      if (!name || !phone || !email || !service || !quantity || !completionDate) {
-        formMessage.textContent = "Please fill in all required fields.";
+    if (!name || !phone || !email || !service || !quantity || !completionDate) {
+      formMessage.textContent = "Please fill in all required fields.";
+      formMessage.className = "form-message error";
+      return;
+    }
+
+    if (!emailPattern.test(email)) {
+      formMessage.textContent = "Please enter a valid email address.";
+      formMessage.className = "form-message error";
+      return;
+    }
+
+    if (Number(quantity) <= 0 || !Number.isFinite(Number(quantity))) {
+      formMessage.textContent = "Please enter a valid quantity.";
+      formMessage.className = "form-message error";
+      return;
+    }
+
+    formMessage.textContent = "Sending your order...";
+    formMessage.className = "form-message";
+
+    try {
+      const response = await fetch("https://formspree.io/f/xdeazawk", {
+        method: "POST",
+        body: new FormData(orderForm),
+        headers: {
+          Accept: "application/json"
+        }
+      });
+
+      if (response.ok) {
+        formMessage.textContent =
+          `Thank you, ${name}! Your order has been submitted successfully. We will contact you shortly.`;
+
+        formMessage.className = "form-message success";
+        orderForm.reset();
+      } else {
+        formMessage.textContent =
+          "Sorry, your order could not be sent. Please try again.";
         formMessage.className = "form-message error";
-        return;
       }
-
-      if (!phonePattern.test(phone)) {
-        formMessage.textContent = "Please enter a valid phone number.";
-        formMessage.className = "form-message error";
-        return;
-      }
-
-      if (!emailPattern.test(email)) {
-        formMessage.textContent = "Please enter a valid email address.";
-        formMessage.className = "form-message error";
-        return;
-      }
-
-      if (Number(quantity) <= 0) {
-        formMessage.textContent = "Quantity must be at least 1.";
-        formMessage.className = "form-message error";
-        return;
-      }
-
-      const successText = `Thank you, ${name}! Your order for ${service} has been received. We will contact you shortly. Selected file: ${fileName}.`;
-      formMessage.textContent = successText;
-      formMessage.className = "form-message success";
-      orderForm.reset();
-    });
-  }
+    } catch (error) {
+      formMessage.textContent =
+        "Unable to send your order. Please check your internet connection and try again.";
+      formMessage.className = "form-message error";
+    }
+  });
+}
 });
